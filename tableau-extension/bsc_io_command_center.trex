@@ -7,7 +7,7 @@
     <author name="Boston Scientific" email="io-analytics@bostonscientific.com" organization="Boston Scientific" website="https://www.bostonscientific.com"/>
     <min-api-version>1.0</min-api-version>
     <source-location>
-      <url>http://localhost:8080/tableau-extension/extension.html</url>
+      <url>https://codeofsaad.github.io/bsc-io-command-center/tableau-extension/extension.html</url>
     </source-location>
     <icon>iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC</icon>
     <permissions>
