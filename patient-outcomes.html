@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Outcomes | IO Unified Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#001e40',
+                        'primary-container': '#003366',
+                        secondary: '#006a6a',
+                        'secondary-chart': '#008B8B',
+                        error: '#ba1a1a',
+                        'sf-blue': '#032D60',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.3); }
+        }
+        .sidebar-link {
+            transition: all 0.2s ease;
+        }
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .sidebar-link.active {
+            background: rgba(255,255,255,0.12);
+            border-left: 3px solid #008B8B;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-primary h-14 flex items-center px-6 shadow-lg">
+        <div class="flex items-center gap-3">
+            <img src="boston-scientific-logo.png" alt="Boston Scientific" class="h-[140px] brightness-0 invert object-contain">
+        </div>
+        <nav class="flex-1 flex justify-center gap-1">
+            <a href="index.html" class="px-4 py-2 text-slate-300 hover:text-white text-sm font-medium rounded-md hover:bg-white/10 transition-all">Dashboard</a>
+            <a href="clinical-trials.html" class="px-4 py-2 text-slate-300 hover:text-white text-sm font-medium rounded-md hover:bg-white/10 transition-all">Clinical Trials</a>
+            <a href="metrics.html" class="px-4 py-2 text-slate-300 hover:text-white text-sm font-medium rounded-md hover:bg-white/10 transition-all">Metrics</a>
+            <a href="logistics.html" class="px-4 py-2 text-slate-300 hover:text-white text-sm font-medium rounded-md hover:bg-white/10 transition-all">Logistics</a>
+            <a href="patient-outcomes.html" class="px-4 py-2 text-white text-sm font-medium rounded-md bg-white/15 transition-all">Patient Outcomes</a>
+        </nav>
+        <div class="flex items-center gap-4">
+            <button class="text-slate-300 hover:text-white transition-colors relative">
+                <span class="material-symbols-outlined text-xl">notifications</span>
+                <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button class="text-slate-300 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white text-xs font-semibold border border-white/20">SA</div>
+        </div>
+    </header>
+
+    <!-- Left Sidebar -->
+    <aside class="fixed top-14 left-0 bottom-0 w-60 bg-primary z-40 flex flex-col border-r border-white/10">
+        <!-- Logo -->
+        <div class="px-5 py-5 border-b border-white/10">
+            <div class="text-white font-bold text-sm tracking-wider">Interventional Oncology</div>
+            <div class="text-white/50 text-xs">Unified Command Center</div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 py-4 px-3 space-y-1">
+            <a href="index.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white">
+                <span class="material-symbols-outlined text-lg">dashboard</span>
+                <span class="text-sm font-medium">Overview</span>
+            </a>
+            <a href="clinical-trials.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white">
+                <span class="material-symbols-outlined text-lg">biotech</span>
+                <span class="text-sm font-medium">Clinical Trials</span>
+            </a>
+            <a href="metrics.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white">
+                <span class="material-symbols-outlined text-lg">monitoring</span>
+                <span class="text-sm font-medium">Metrics</span>
+            </a>
+            <a href="logistics.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white">
+                <span class="material-symbols-outlined text-lg">local_shipping</span>
+                <span class="text-sm font-medium">Logistics</span>
+            </a>
+            <a href="patient-outcomes.html" class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-white">
+                <span class="material-symbols-outlined text-lg">person_search</span>
+                <span class="text-sm font-medium">Patient Outcomes</span>
+            </a>
+        </nav>
+
+        <!-- Agentforce Button -->
+        <div class="px-4 pb-5">
+            <button id="agentforce-btn" class="w-full flex items-center gap-3 px-4 py-3 bg-sf-blue rounded-xl hover:brightness-110 transition-all shadow-lg">
+                <div class="relative">
+                    <span class="material-symbols-outlined text-white text-lg">smart_toy</span>
+                    <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full pulse-dot border border-sf-blue"></span>
+                </div>
+                <span class="text-white text-sm font-semibold">Agentforce</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-60 mt-14 p-6">
+        <!-- Concierge Search Bar -->
+        <div class="mb-6">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input type="text" placeholder="Ask Concierge: Show patients with tumor dose above 400 Gy and their survival outcomes" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-chart/30 focus:border-secondary-chart transition-all">
+                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-secondary-chart transition-colors">mic</span>
+            </div>
+        </div>
+
+        <!-- Pulse-Style Metrics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- ORR Card -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Objective Response Rate</p>
+                        <p class="text-3xl font-bold text-primary mt-1 mono">64.2%</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-emerald-600">trending_up</span>
+                    </div>
+                </div>
+                <canvas id="spark1" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-slate-600 leading-relaxed mt-3 border-t border-slate-100 pt-3">Objective response rate improved <span class="font-semibold text-emerald-700">2.4pp</span> vs previous cohort; patients receiving &ge;400 Gy show <span class="font-semibold">78% ORR</span>.</p>
+            </div>
+
+            <!-- Median TTP Card -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Median Time to Progression</p>
+                        <p class="text-3xl font-bold text-primary mt-1 mono">14.8 <span class="text-lg text-slate-500">mos</span></p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-blue-600">schedule</span>
+                    </div>
+                </div>
+                <canvas id="spark2" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-slate-600 leading-relaxed mt-3 border-t border-slate-100 pt-3">Time to progression exceeds the <span class="font-semibold">12-month benchmark</span>; high-dose cohort achieving <span class="font-semibold text-blue-700">19.2 months</span> median.</p>
+            </div>
+
+            <!-- Grade 3+ AE Card -->
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">Grade 3+ Adverse Events</p>
+                        <p class="text-3xl font-bold text-primary mt-1 mono">12.5%</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-red-600">warning</span>
+                    </div>
+                </div>
+                <canvas id="spark3" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-slate-600 leading-relaxed mt-3 border-t border-slate-100 pt-3">Adverse event rate increased <span class="font-semibold text-red-700">1.1pp</span>; Site 012 (London) flagged for <span class="font-semibold">hepatotoxicity signal</span> review.</p>
+            </div>
+        </div>
+
+        <!-- Kaplan-Meier Survival Curve -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-primary">Overall Survival (OS) by Treatment Arm</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Kaplan-Meier estimate | Intent-to-treat population</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary-chart/10 text-secondary-chart text-xs font-semibold rounded-full border border-secondary-chart/20">
+                        <span class="material-symbols-outlined text-sm">filter_alt</span>
+                        Filter: &ge;400 Gy Dose
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center gap-6 mb-4 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-0.5 bg-secondary-chart inline-block rounded"></span>
+                    <span class="text-slate-600">Study Drug + SoC</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-0.5 bg-primary-container inline-block rounded border-t border-dashed border-primary-container" style="border-style: dashed;"></span>
+                    <span class="text-slate-600">SoC Alone</span>
+                </div>
+            </div>
+            <div class="h-80">
+                <canvas id="kmChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Two Column Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+            <!-- Patient Cohort Analysis Table (60%) -->
+            <div class="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-base font-bold text-primary">Patient Cohort Analysis</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Active participants in high-dose arm</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100">
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient ID</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Site</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Age/Sex</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Treatment Date</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Dose (Gy)</th>
+                                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Outcome Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-9942A</td>
+                                <td class="px-4 py-3 text-slate-700">Site 104 Boston</td>
+                                <td class="px-4 py-3 text-slate-600">68/M</td>
+                                <td class="px-4 py-3 text-slate-600">2023-11-12</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">450</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Stable</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-8812C</td>
+                                <td class="px-4 py-3 text-slate-700">Site 012 London</td>
+                                <td class="px-4 py-3 text-slate-600">54/F</td>
+                                <td class="px-4 py-3 text-slate-600">2023-10-05</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">380</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">Progression</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-7731B</td>
+                                <td class="px-4 py-3 text-slate-700">Site 201 Tokyo</td>
+                                <td class="px-4 py-3 text-slate-600">71/M</td>
+                                <td class="px-4 py-3 text-slate-600">2024-01-22</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">420</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Partial Resp</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-9011A</td>
+                                <td class="px-4 py-3 text-slate-700">Site 104 Boston</td>
+                                <td class="px-4 py-3 text-slate-600">62/F</td>
+                                <td class="px-4 py-3 text-slate-600">2023-12-01</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">510</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">AE Grade 3</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-6643D</td>
+                                <td class="px-4 py-3 text-slate-700">Site 042 Berlin</td>
+                                <td class="px-4 py-3 text-slate-600">58/M</td>
+                                <td class="px-4 py-3 text-slate-600">2024-03-15</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">465</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Complete Resp</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-4 py-3 font-mono text-xs font-medium text-primary">PT-5521E</td>
+                                <td class="px-4 py-3 text-slate-700">Site 087 Seoul</td>
+                                <td class="px-4 py-3 text-slate-600">66/F</td>
+                                <td class="px-4 py-3 text-slate-600">2024-02-08</td>
+                                <td class="px-4 py-3 font-mono text-slate-700 font-medium">320</td>
+                                <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Stable</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top AE Focus Areas (40%) -->
+            <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                <div class="mb-4">
+                    <h3 class="text-base font-bold text-primary">Top AE Focus Areas</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Grade 3+ adverse events by category</p>
+                </div>
+                <div class="h-64">
+                    <canvas id="aeChart"></canvas>
+                </div>
+                <div class="mt-4 space-y-2 text-xs text-slate-500">
+                    <div class="flex justify-between"><span>Hepatotoxicity</span><span class="mono">Product Y | Site 012</span></div>
+                    <div class="flex justify-between"><span>Fatigue (Gr 3)</span><span class="mono">Product Y | Site 104</span></div>
+                    <div class="flex justify-between"><span>Neutropenia</span><span class="mono">Product Y | Site 201</span></div>
+                    <div class="flex justify-between"><span>Hypertension</span><span class="mono">Product Y | Site 042</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dose-Response Analysis -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-primary">Dose-Response Analysis</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Tumor absorbed dose vs time to progression | Dashed line = 400 Gy threshold</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-secondary-chart inline-block"></span>
+                        <span class="text-slate-600">Responders</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span>
+                        <span class="text-slate-600">Non-responders</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-80">
+                <canvas id="doseResponseChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Kaplan-Meier Survival Curve
+        const kmCtx = document.getElementById('kmChart').getContext('2d');
+        new Chart(kmCtx, {
+            type: 'line',
+            data: {
+                labels: [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
+                datasets: [
+                    {
+                        label: 'Study Drug + SoC',
+                        data: [1.0, 0.96, 0.91, 0.87, 0.82, 0.76, 0.71, 0.65, 0.58, 0.52, 0.47, 0.43, 0.40],
+                        borderColor: '#008B8B',
+                        backgroundColor: 'rgba(0, 139, 139, 0.05)',
+                        borderWidth: 2.5,
+                        stepped: 'before',
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        tension: 0,
+                    },
+                    {
+                        label: 'SoC Alone',
+                        data: [1.0, 0.92, 0.82, 0.72, 0.60, 0.48, 0.38, 0.30, 0.22, 0.17, 0.14, 0.11, 0.09],
+                        borderColor: '#003366',
+                        backgroundColor: 'rgba(0, 51, 102, 0.03)',
+                        borderWidth: 2.5,
+                        borderDash: [8, 4],
+                        stepped: 'before',
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        tension: 0,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#001e40',
+                        titleFont: { family: 'Inter', size: 12 },
+                        bodyFont: { family: 'JetBrains Mono', size: 11 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            title: function(items) {
+                                return 'Month ' + items[0].label;
+                            },
+                            label: function(item) {
+                                return item.dataset.label + ': ' + (item.raw * 100).toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Months',
+                            font: { family: 'Inter', size: 12, weight: '500' },
+                            color: '#64748b'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'Inter', size: 11 },
+                            color: '#94a3b8',
+                            callback: function(value, index) {
+                                const labels = [0, 6, 12, 18, 24, 30, 36];
+                                const val = this.getLabelForValue(value);
+                                return labels.includes(Number(val)) ? val : '';
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 1.0,
+                        title: {
+                            display: true,
+                            text: 'Survival Probability',
+                            font: { family: 'Inter', size: 12, weight: '500' },
+                            color: '#64748b'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'JetBrains Mono', size: 11 },
+                            color: '#94a3b8',
+                            stepSize: 0.2
+                        }
+                    }
+                }
+            }
+        });
+
+        // Top AE Focus Areas - Horizontal Bar Chart
+        const aeCtx = document.getElementById('aeChart').getContext('2d');
+        new Chart(aeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Hepatotoxicity', 'Fatigue (Gr 3)', 'Neutropenia', 'Hypertension'],
+                datasets: [{
+                    data: [4.2, 3.1, 2.8, 1.5],
+                    backgroundColor: ['#ba1a1a', '#d97706', '#d97706', '#94a3b8'],
+                    borderRadius: 4,
+                    barThickness: 28
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#001e40',
+                        titleFont: { family: 'Inter', size: 12 },
+                        bodyFont: { family: 'JetBrains Mono', size: 11 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(item) {
+                                return item.raw + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        max: 5,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'JetBrains Mono', size: 11 },
+                            color: '#94a3b8',
+                            callback: function(value) { return value + '%'; }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#334155'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Dose-Response Scatter Plot
+        const drCtx = document.getElementById('doseResponseChart').getContext('2d');
+
+        // Responders (teal) - generally higher dose, higher TTP
+        const responders = [
+            { x: 420, y: 22 }, { x: 450, y: 28 }, { x: 480, y: 31 },
+            { x: 410, y: 19 }, { x: 465, y: 25 }, { x: 520, y: 34 },
+            { x: 380, y: 16 }, { x: 440, y: 21 }, { x: 500, y: 29 },
+            { x: 550, y: 33 }, { x: 430, y: 20 }, { x: 470, y: 26 },
+            { x: 510, y: 30 }, { x: 490, y: 27 }, { x: 460, y: 23 },
+            { x: 445, y: 18 }, { x: 530, y: 32 }, { x: 400, y: 17 },
+            { x: 475, y: 24 }, { x: 505, y: 28 }
+        ];
+
+        // Non-responders (gray) - generally lower dose, lower TTP
+        const nonResponders = [
+            { x: 180, y: 5 }, { x: 220, y: 7 }, { x: 280, y: 9 },
+            { x: 310, y: 8 }, { x: 250, y: 6 }, { x: 350, y: 11 },
+            { x: 200, y: 4 }, { x: 320, y: 10 }, { x: 270, y: 7 },
+            { x: 340, y: 12 }, { x: 190, y: 3 }, { x: 360, y: 13 },
+            { x: 240, y: 6 }, { x: 300, y: 9 }, { x: 380, y: 14 },
+            { x: 420, y: 11 }, { x: 260, y: 8 }, { x: 330, y: 10 }
+        ];
+
+        new Chart(drCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Responders',
+                        data: responders,
+                        backgroundColor: 'rgba(0, 139, 139, 0.7)',
+                        borderColor: '#008B8B',
+                        borderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: 'Non-responders',
+                        data: nonResponders,
+                        backgroundColor: 'rgba(148, 163, 184, 0.6)',
+                        borderColor: '#94a3b8',
+                        borderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#001e40',
+                        titleFont: { family: 'Inter', size: 12 },
+                        bodyFont: { family: 'JetBrains Mono', size: 11 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(item) {
+                                return item.dataset.label + ': ' + item.raw.x + ' Gy, ' + item.raw.y + ' mos';
+                            }
+                        }
+                    },
+                    annotation: undefined
+                },
+                scales: {
+                    x: {
+                        min: 150,
+                        max: 600,
+                        title: {
+                            display: true,
+                            text: 'Tumor Absorbed Dose (Gy)',
+                            font: { family: 'Inter', size: 12, weight: '500' },
+                            color: '#64748b'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'JetBrains Mono', size: 11 },
+                            color: '#94a3b8',
+                            stepSize: 50
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 36,
+                        title: {
+                            display: true,
+                            text: 'Time to Progression (months)',
+                            font: { family: 'Inter', size: 12, weight: '500' },
+                            color: '#64748b'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'JetBrains Mono', size: 11 },
+                            color: '#94a3b8',
+                            stepSize: 6
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'thresholdLine',
+                afterDraw: function(chart) {
+                    const xScale = chart.scales.x;
+                    const yScale = chart.scales.y;
+                    const ctx = chart.ctx;
+                    const xPixel = xScale.getPixelForValue(400);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#ba1a1a';
+                    ctx.lineWidth = 1.5;
+                    ctx.moveTo(xPixel, yScale.top);
+                    ctx.lineTo(xPixel, yScale.bottom);
+                    ctx.stroke();
+
+                    // Label
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#ba1a1a';
+                    ctx.font = '11px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('400 Gy Threshold', xPixel, yScale.top - 8);
+                    ctx.restore();
+                }
+            }]
+        });
+    </script>
+
+<!-- Agentforce Panel -->
+<div id="agentforce-panel" class="hidden fixed bottom-20 z-[1000] flex flex-col bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style="left: 260px; width: 380px; height: 520px;">
+    <div class="bg-[#032D60] text-white px-4 py-3 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+            <span class="text-sm font-bold">Agentforce for Analytics</span>
+        </div>
+        <button id="agentforce-close" class="text-white/70 hover:text-white">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+    <div id="agentforce-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div class="flex justify-start mb-3">
+            <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-lg rounded-bl-none max-w-[85%] text-sm shadow-sm">
+                Hi! I'm your Agentforce analytics assistant. I can help you explore the IO Command Center data. Try one of these questions:
+            </div>
+        </div>
+        <div id="agentforce-suggestions" class="space-y-2 mb-3"></div>
+    </div>
+    <div class="border-t border-gray-200 p-3 flex gap-2 shrink-0 bg-white">
+        <input id="agentforce-input" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[#0176D3] focus:ring-1 focus:ring-[#0176D3] outline-none" placeholder="Ask Agentforce...">
+        <button id="agentforce-send" class="bg-[#0176D3] text-white px-3 py-2 rounded-lg hover:bg-[#014486] transition-colors">
+            <span class="material-symbols-outlined text-lg">send</span>
+        </button>
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderSparkline('spark1', [58.2, 59.5, 60.8, 61.5, 62.0, 62.8, 63.5, 64.2], '#22c55e');
+    renderSparkline('spark2', [12.4, 12.8, 13.2, 13.6, 14.0, 14.2, 14.5, 14.8], '#22c55e');
+    renderSparkline('spark3', [10.2, 10.5, 10.8, 11.0, 11.4, 11.8, 12.1, 12.5], '#ef4444');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Trials | IO Unified Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#001e40',
+                        'primary-container': '#003366',
+                        secondary: '#006a6a',
+                        error: '#ba1a1a',
+                        surface: '#f7f9fb',
+                        'sf-blue': '#032D60',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        .funnel-arrow::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid #006a6a;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-primary text-white h-14 flex items-center justify-between px-6 fixed top-0 left-0 right-0 z-50 shadow-lg">
+        <div class="flex items-center gap-3">
+            <img src="boston-scientific-logo.png" alt="Boston Scientific" class="h-[140px] brightness-0 invert object-contain">
+        </div>
+        <div class="flex items-center gap-1">
+            <a href="index.html" class="px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">Dashboard</a>
+            <a href="clinical-trials.html" class="px-4 py-2 rounded-md text-sm font-medium text-white bg-white/15 border border-white/20">Clinical Trials</a>
+            <a href="metrics.html" class="px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">Metrics</a>
+            <a href="logistics.html" class="px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">Logistics</a>
+            <a href="patient-outcomes.html" class="px-4 py-2 rounded-md text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">Patient Outcomes</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="relative p-1 hover:bg-white/10 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-xl">notifications</span>
+                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button class="p-1 hover:bg-white/10 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold">SA</div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="fixed top-14 left-0 w-60 h-[calc(100vh-3.5rem)] bg-primary text-white flex flex-col z-40">
+        <!-- Logo -->
+        <div class="px-5 py-5 border-b border-white/10">
+            <div class="text-white font-bold text-sm tracking-wider">Interventional Oncology</div>
+            <div class="text-white/50 text-xs">Unified Command Center</div>
+        </div>
+
+        <!-- Navigation Items -->
+        <nav class="flex-1 py-4 px-3 space-y-1">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-lg">dashboard</span>
+                Overview
+            </a>
+            <a href="clinical-trials.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white bg-white/15 border border-white/10">
+                <span class="material-symbols-outlined text-lg">science</span>
+                Clinical Trials
+            </a>
+            <a href="metrics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-lg">analytics</span>
+                Metrics
+            </a>
+            <a href="logistics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-lg">local_shipping</span>
+                Logistics
+            </a>
+            <a href="patient-outcomes.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-lg">favorite</span>
+                Patient Outcomes
+            </a>
+        </nav>
+
+        <!-- Agentforce Button -->
+        <div class="p-4 border-t border-white/10">
+            <button id="agentforce-btn" class="w-full flex items-center gap-3 px-4 py-3 bg-sf-blue rounded-lg hover:bg-sf-blue/80 transition-colors group">
+                <div class="relative">
+                    <span class="material-symbols-outlined text-lg">smart_toy</span>
+                    <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full pulse-dot border border-sf-blue"></span>
+                </div>
+                <span class="text-sm font-medium">Agentforce</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-60 mt-14 p-6">
+
+        <!-- Concierge Search Bar -->
+        <div class="mb-6">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                <input type="text" placeholder="Ask Concierge: Show me trials with enrollment below 50% of target" class="w-full pl-12 pr-4 py-3.5 bg-white rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-all">
+                <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary cursor-pointer hover:scale-110 transition-transform">auto_awesome</span>
+            </div>
+        </div>
+
+        <!-- Pulse-Style Metrics Row -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <!-- Active Studies -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-secondary text-lg">biotech</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Active Studies</span>
+                </div>
+                <canvas id="spark1" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <div class="text-3xl font-bold text-primary mb-2">50+</div>
+                <p class="text-xs text-gray-600 leading-relaxed">14 interventional trials across 5 therapeutic areas with 281 global sites.</p>
+            </div>
+            <!-- Screening -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-secondary text-lg">person_search</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Screening</span>
+                </div>
+                <canvas id="spark2" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <div class="text-3xl font-bold text-primary mb-2">12,450</div>
+                <p class="text-xs text-gray-600 leading-relaxed">Screening volume up 450 this week; consent conversion holding steady at 78.8%.</p>
+            </div>
+            <!-- Enrollment Rate -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-secondary text-lg">trending_up</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Enrollment Rate</span>
+                </div>
+                <canvas id="spark3" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <div class="text-3xl font-bold text-primary mb-2">81%</div>
+                <p class="text-xs text-gray-600 leading-relaxed">Overall enrollment is 19pp below target, primarily due to LEGACY-IV site activation delays.</p>
+            </div>
+            <!-- Protocol Deviations -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-error text-lg">warning</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Protocol Deviations</span>
+                </div>
+                <canvas id="spark4" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <div class="text-3xl font-bold text-primary mb-2">12</div>
+                <p class="text-xs text-gray-600 leading-relaxed">Critical deviations reduced 40% QoQ; Inc/Exc criteria errors remain the top category.</p>
+            </div>
+        </div>
+
+        <!-- Global Enrollment Funnel -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
+            <h2 class="text-base font-semibold text-primary mb-5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary">filter_alt</span>
+                Global Enrollment Funnel
+            </h2>
+            <div class="flex items-center justify-between px-4">
+                <!-- Screening -->
+                <div class="flex-1 relative funnel-arrow">
+                    <div class="bg-gradient-to-br from-primary to-primary-container rounded-xl p-5 text-white text-center">
+                        <div class="text-xs font-medium uppercase tracking-wide opacity-80 mb-1">Screening</div>
+                        <div class="text-2xl font-bold">12,450</div>
+                    </div>
+                </div>
+                <!-- Spacer -->
+                <div class="w-10"></div>
+                <!-- Consented -->
+                <div class="flex-1 relative funnel-arrow">
+                    <div class="bg-gradient-to-br from-secondary to-teal-700 rounded-xl p-5 text-white text-center">
+                        <div class="text-xs font-medium uppercase tracking-wide opacity-80 mb-1">Consented</div>
+                        <div class="text-2xl font-bold">9,820</div>
+                        <div class="text-[10px] mt-1 opacity-70">78.8% conv</div>
+                    </div>
+                </div>
+                <!-- Spacer -->
+                <div class="w-10"></div>
+                <!-- Randomized -->
+                <div class="flex-1 relative funnel-arrow">
+                    <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-5 text-white text-center">
+                        <div class="text-xs font-medium uppercase tracking-wide opacity-80 mb-1">Randomized</div>
+                        <div class="text-2xl font-bold">7,105</div>
+                        <div class="text-[10px] mt-1 opacity-70">72.3% conv</div>
+                    </div>
+                </div>
+                <!-- Spacer -->
+                <div class="w-10"></div>
+                <!-- Dosed -->
+                <div class="flex-1">
+                    <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-xl p-5 text-white text-center">
+                        <div class="text-xs font-medium uppercase tracking-wide opacity-80 mb-1">Dosed</div>
+                        <div class="text-2xl font-bold">6,890</div>
+                        <div class="text-[10px] mt-1 opacity-70">96.9% conv</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-5 gap-6 mb-6">
+            <!-- Left Column: Study Performance Matrix (60%) -->
+            <div class="col-span-3 space-y-6">
+                <!-- Enrollment Bar Chart -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary text-lg">bar_chart</span>
+                        Enrollment by Trial
+                    </h3>
+                    <div class="h-52">
+                        <canvas id="enrollmentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Study Performance Table -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary text-lg">table_chart</span>
+                        Study Performance Matrix
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">Trial ID</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">Status</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">Sites (Act/Plan)</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">Target</th>
+                                    <th class="text-center py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">Actual</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-gray-600 uppercase tracking-wide">% to Plan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- ROWAN-III -->
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-2 font-mono font-medium text-primary">ROWAN-III</td>
+                                    <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">Recruiting</span></td>
+                                    <td class="py-3 px-2 text-center text-gray-700">142 / 150</td>
+                                    <td class="py-3 px-2 text-center font-medium text-gray-700">3,000</td>
+                                    <td class="py-3 px-2 text-center font-medium text-primary">2,450</td>
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-secondary rounded-full h-2" style="width: 81%"></div>
+                                            </div>
+                                            <span class="text-[10px] font-semibold text-gray-600 w-8">81%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- PROACTIF-II -->
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-2 font-mono font-medium text-primary">PROACTIF-II</td>
+                                    <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">Recruiting</span></td>
+                                    <td class="py-3 px-2 text-center text-gray-700">85 / 100</td>
+                                    <td class="py-3 px-2 text-center font-medium text-gray-700">1,500</td>
+                                    <td class="py-3 px-2 text-center font-medium text-primary">1,320</td>
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-secondary rounded-full h-2" style="width: 88%"></div>
+                                            </div>
+                                            <span class="text-[10px] font-semibold text-gray-600 w-8">88%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- LEGACY-IV -->
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-2 font-mono font-medium text-primary">LEGACY-IV</td>
+                                    <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-error">Behind Plan</span></td>
+                                    <td class="py-3 px-2 text-center text-gray-700">42 / 75</td>
+                                    <td class="py-3 px-2 text-center font-medium text-gray-700">800</td>
+                                    <td class="py-3 px-2 text-center font-medium text-error">210</td>
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-error rounded-full h-2" style="width: 26%"></div>
+                                            </div>
+                                            <span class="text-[10px] font-semibold text-error w-8">26%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- EPOCH-I -->
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-2 font-mono font-medium text-primary">EPOCH-I</td>
+                                    <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">Startup</span></td>
+                                    <td class="py-3 px-2 text-center text-gray-700">12 / 50</td>
+                                    <td class="py-3 px-2 text-center font-medium text-gray-700">500</td>
+                                    <td class="py-3 px-2 text-center font-medium text-gray-400">0</td>
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-gray-400 rounded-full h-2" style="width: 0%"></div>
+                                            </div>
+                                            <span class="text-[10px] font-semibold text-gray-400 w-8">0%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Protocol Deviations (40%) -->
+            <div class="col-span-2">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-error text-lg">report</span>
+                        Protocol Deviations
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="deviationsChart"></canvas>
+                    </div>
+                    <!-- Legend -->
+                    <div class="flex items-center justify-center gap-4 mt-4">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-red-500"></span>
+                            <span class="text-[10px] text-gray-600 font-medium">Critical</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-amber-500"></span>
+                            <span class="text-[10px] text-gray-600 font-medium">Major</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-blue-400"></span>
+                            <span class="text-[10px] text-gray-600 font-medium">Minor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Site Performance Map Placeholder -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 class="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-lg">map</span>
+                Site Performance Map
+            </h3>
+            <div class="bg-gray-50 rounded-lg h-48 flex items-center justify-center border border-dashed border-gray-300">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">public</span>
+                    <p class="text-sm text-gray-400">Interactive site map loading...</p>
+                </div>
+            </div>
+            <!-- Notification Bar -->
+            <div class="mt-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                <span class="material-symbols-outlined text-amber-600 text-lg">info</span>
+                <span class="text-xs text-amber-800 font-medium">14 EMEA sites pending activation</span>
+                <a href="#" class="ml-auto text-xs font-semibold text-secondary hover:underline">View Region</a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Agentforce Panel -->
+    <div id="agentforce-panel" class="hidden fixed bottom-20 z-[1000] flex flex-col bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style="left: 260px; width: 380px; height: 520px;">
+        <div class="bg-[#032D60] text-white px-4 py-3 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                <span class="text-sm font-bold">Agentforce for Analytics</span>
+            </div>
+            <button id="agentforce-close" class="text-white/70 hover:text-white">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <div id="agentforce-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+            <div class="flex justify-start mb-3">
+                <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-lg rounded-bl-none max-w-[85%] text-sm shadow-sm">
+                    Hi! I'm your Agentforce analytics assistant. I can help you explore the IO Command Center data. Try one of these questions:
+                </div>
+            </div>
+            <div id="agentforce-suggestions" class="space-y-2 mb-3"></div>
+        </div>
+        <div class="border-t border-gray-200 p-3 flex gap-2 shrink-0 bg-white">
+            <input id="agentforce-input" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[#0176D3] focus:ring-1 focus:ring-[#0176D3] outline-none" placeholder="Ask Agentforce...">
+            <button id="agentforce-send" class="bg-[#0176D3] text-white px-3 py-2 rounded-lg hover:bg-[#014486] transition-colors">
+                <span class="material-symbols-outlined text-lg">send</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        renderSparkline('spark1', [42, 44, 45, 47, 48, 49, 50, 50], '#22c55e');
+        renderSparkline('spark2', [10200, 10800, 11100, 11500, 11800, 12000, 12200, 12450], '#22c55e');
+        renderSparkline('spark3', [89, 88, 86, 85, 84, 83, 82, 81], '#f59e0b');
+        renderSparkline('spark4', [22, 20, 18, 16, 15, 14, 13, 12], '#22c55e');
+    });
+    </script>
+
+    <!-- Chart.js Scripts -->
+    <script>
+        // Enrollment by Trial Bar Chart
+        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+        new Chart(enrollmentCtx, {
+            type: 'bar',
+            data: {
+                labels: ['ROWAN-III', 'PROACTIF-II', 'LEGACY-IV', 'EPOCH-I'],
+                datasets: [
+                    {
+                        label: 'Target Enrollment',
+                        data: [3000, 1500, 800, 500],
+                        backgroundColor: 'rgba(0, 30, 64, 0.15)',
+                        borderColor: '#001e40',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Actual Enrollment',
+                        data: [2450, 1320, 210, 0],
+                        backgroundColor: ['rgba(0, 106, 106, 0.8)', 'rgba(0, 106, 106, 0.8)', 'rgba(186, 26, 26, 0.8)', 'rgba(156, 163, 175, 0.5)'],
+                        borderColor: ['#006a6a', '#006a6a', '#ba1a1a', '#9ca3af'],
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 10, family: 'Inter' },
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 16
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { size: 10, family: 'Inter' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10, family: 'JetBrains Mono' } }
+                    }
+                }
+            }
+        });
+
+        // Protocol Deviations Bar Chart
+        const deviationsCtx = document.getElementById('deviationsChart').getContext('2d');
+        new Chart(deviationsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Inc/Exc', 'IP Comp', 'Safety', 'Other'],
+                datasets: [
+                    {
+                        label: 'Critical',
+                        data: [62, 20, 45, 10],
+                        backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                        borderRadius: 3,
+                    },
+                    {
+                        label: 'Major',
+                        data: [48, 35, 40, 20],
+                        backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                        borderRadius: 3,
+                    },
+                    {
+                        label: 'Minor',
+                        data: [32, 30, 25, 15],
+                        backgroundColor: 'rgba(96, 165, 250, 0.85)',
+                        borderRadius: 3,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterBody: function(context) {
+                                const dataIndex = context[0].dataIndex;
+                                const totals = [142, 85, 110, 45];
+                                return 'Total: ' + totals[dataIndex];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { size: 10, family: 'Inter' } }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { size: 10, family: 'Inter' } }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

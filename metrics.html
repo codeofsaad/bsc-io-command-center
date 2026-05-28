@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics | IO Unified Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#001e40',
+                        'primary-container': '#003366',
+                        secondary: '#006a6a',
+                        error: '#ba1a1a',
+                        'sf-blue': '#032D60',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.3); }
+        }
+        .nav-active {
+            border-bottom: 2px solid #006a6a;
+            color: #ffffff;
+        }
+        .sidebar-active {
+            background: rgba(0, 106, 106, 0.2);
+            border-left: 3px solid #006a6a;
+        }
+        .heatmap-cell {
+            transition: transform 0.2s;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-primary text-white h-14 flex items-center justify-between px-6 z-50 fixed top-0 left-0 right-0 shadow-lg">
+        <div class="flex items-center gap-3">
+            <img src="boston-scientific-logo.png" alt="Boston Scientific" class="h-[140px] brightness-0 invert object-contain">
+        </div>
+        <div class="flex items-center space-x-1">
+            <a href="index.html" class="px-4 py-4 text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</a>
+            <a href="clinical-trials.html" class="px-4 py-4 text-sm font-medium text-gray-300 hover:text-white transition-colors">Clinical Trials</a>
+            <a href="metrics.html" class="px-4 py-4 text-sm font-medium text-white nav-active transition-colors">Metrics</a>
+            <a href="logistics.html" class="px-4 py-4 text-sm font-medium text-gray-300 hover:text-white transition-colors">Logistics</a>
+            <a href="patient-outcomes.html" class="px-4 py-4 text-sm font-medium text-gray-300 hover:text-white transition-colors">Patient Outcomes</a>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button class="relative p-2 hover:bg-white/10 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-xl">notifications</span>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span>
+            </button>
+            <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-xs font-bold">SA</div>
+        </div>
+    </nav>
+
+    <div class="flex pt-14 min-h-screen">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-primary text-white fixed top-14 left-0 bottom-0 flex flex-col overflow-y-auto">
+            <!-- Logo -->
+            <div class="px-5 py-5 border-b border-white/10">
+                <div class="text-white font-bold text-sm tracking-wider">Interventional Oncology</div>
+                <div class="text-white/50 text-xs">Unified Command Center</div>
+            </div>
+
+            <!-- Navigation Items -->
+            <nav class="flex-1 py-4">
+                <a href="index.html" class="flex items-center space-x-3 px-5 py-3 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                    <span class="material-symbols-outlined text-xl">dashboard</span>
+                    <span>Overview</span>
+                </a>
+                <a href="clinical-trials.html" class="flex items-center space-x-3 px-5 py-3 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                    <span class="material-symbols-outlined text-xl">science</span>
+                    <span>Clinical Trials</span>
+                </a>
+                <a href="metrics.html" class="flex items-center space-x-3 px-5 py-3 text-sm sidebar-active text-white font-medium">
+                    <span class="material-symbols-outlined text-xl">analytics</span>
+                    <span>Metrics</span>
+                </a>
+                <a href="logistics.html" class="flex items-center space-x-3 px-5 py-3 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                    <span class="material-symbols-outlined text-xl">local_shipping</span>
+                    <span>Logistics</span>
+                </a>
+                <a href="patient-outcomes.html" class="flex items-center space-x-3 px-5 py-3 text-sm text-gray-300 hover:bg-white/5 transition-colors">
+                    <span class="material-symbols-outlined text-xl">monitor_heart</span>
+                    <span>Patient Outcomes</span>
+                </a>
+            </nav>
+
+            <!-- Agentforce Button -->
+            <div class="p-4 border-t border-white/10">
+                <button id="agentforce-btn" class="w-full bg-sf-blue hover:bg-sf-blue/80 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-lg">
+                    <div class="relative">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full pulse-dot"></span>
+                    </div>
+                    <span class="font-medium text-sm">Agentforce</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="ml-64 flex-1 p-6">
+
+            <!-- Concierge Search Bar -->
+            <div class="mb-6">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input type="text" placeholder="Ask Concierge: Which accounts have the highest cross-sell opportunity for Intera 3000?" class="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl shadow-sm text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-all">
+                </div>
+            </div>
+
+            <!-- Pulse-Style Metrics Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                <!-- Quota Attainment -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quota Attainment</span>
+                        <span class="material-symbols-outlined text-secondary text-lg">trending_up</span>
+                    </div>
+                    <div class="text-3xl font-bold text-primary mono">94.2%</div>
+                    <canvas id="spark1" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Global quota is on track; DACH (+26pp) and APAC (+22pp) are outperforming while US-West is 53pp below plan.</p>
+                </div>
+
+                <!-- Account Penetration -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Penetration</span>
+                        <span class="material-symbols-outlined text-secondary text-lg">groups</span>
+                    </div>
+                    <div class="text-3xl font-bold text-primary mono">68%</div>
+                    <canvas id="spark2" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">340 of 500 Tier 1 accounts are actively purchasing; 28 new accounts added this quarter.</p>
+                </div>
+
+                <!-- Cross-Sell Rate -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cross-Sell Rate</span>
+                        <span class="material-symbols-outlined text-secondary text-lg">swap_horiz</span>
+                    </div>
+                    <div class="text-3xl font-bold text-primary mono">18.5%</div>
+                    <canvas id="spark3" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Multi-product adoption improving; Mayo Clinic and Charite Berlin lead with 3-product penetration.</p>
+                </div>
+
+                <!-- Avg Deal Velocity -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Deal Velocity</span>
+                        <span class="material-symbols-outlined text-secondary text-lg">speed</span>
+                    </div>
+                    <div class="text-3xl font-bold text-primary mono">42d</div>
+                    <canvas id="spark4" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Deal cycle shortened by 5 days QoQ driven by streamlined procurement at Tier 1 accounts.</p>
+                </div>
+            </div>
+
+            <!-- Revenue & Volume Heatmap -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h2 class="text-lg font-semibold text-primary">Revenue & Volume Heatmap</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Performance by region and product line (intensity = vs. target)</p>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs text-gray-500">
+                        <span class="inline-block w-3 h-3 rounded bg-teal-100"></span><span>Below Target</span>
+                        <span class="inline-block w-3 h-3 rounded bg-teal-300 ml-2"></span><span>On Target</span>
+                        <span class="inline-block w-3 h-3 rounded bg-teal-600 ml-2"></span><span>Above Target</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3 pl-3 w-40">Region</th>
+                                <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">TheraSphere</th>
+                                <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Intera 3000</th>
+                                <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">Obsidio</th>
+                                <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider pb-3">LC Bead</th>
+                            </tr>
+                        </thead>
+                        <tbody class="space-y-2">
+                            <!-- North America -->
+                            <tr>
+                                <td class="py-2 pl-3">
+                                    <div class="font-medium text-sm text-primary">North America</div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-600 rounded-lg p-3 text-center text-white">
+                                        <div class="font-bold text-base mono">$12.4M</div>
+                                        <div class="text-xs opacity-80">4,200 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-500 rounded-lg p-3 text-center text-white">
+                                        <div class="font-bold text-base mono">$8.2M</div>
+                                        <div class="text-xs opacity-80">2,150 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-300 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$3.1M</div>
+                                        <div class="text-xs opacity-80">800 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-400 rounded-lg p-3 text-center text-white">
+                                        <div class="font-bold text-base mono">$5.6M</div>
+                                        <div class="text-xs opacity-80">1,900 units</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- EMEA -->
+                            <tr>
+                                <td class="py-2 pl-3">
+                                    <div class="font-medium text-sm text-primary">EMEA</div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-500 rounded-lg p-3 text-center text-white">
+                                        <div class="font-bold text-base mono">$7.8M</div>
+                                        <div class="text-xs opacity-80">2,800 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-400 rounded-lg p-3 text-center text-white">
+                                        <div class="font-bold text-base mono">$4.5M</div>
+                                        <div class="text-xs opacity-80">1,200 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-100 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$1.2M</div>
+                                        <div class="text-xs opacity-80">350 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-300 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$3.4M</div>
+                                        <div class="text-xs opacity-80">1,100 units</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- APAC -->
+                            <tr>
+                                <td class="py-2 pl-3">
+                                    <div class="font-medium text-sm text-primary">APAC</div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-300 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$3.2M</div>
+                                        <div class="text-xs opacity-80">1,100 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-200 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$2.1M</div>
+                                        <div class="text-xs opacity-80">600 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-gray-100 rounded-lg p-3 text-center text-gray-400">
+                                        <div class="font-bold text-base mono">&mdash;</div>
+                                        <div class="text-xs">0 units</div>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2">
+                                    <div class="heatmap-cell bg-teal-200 rounded-lg p-3 text-center text-primary">
+                                        <div class="font-bold text-base mono">$1.5M</div>
+                                        <div class="text-xs opacity-80">450 units</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Two Column Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Cross-Sell Penetration (55%) -->
+                <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-primary">Cross-Sell Penetration</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Top accounts by multi-product adoption</p>
+                        </div>
+                        <div class="flex items-center space-x-3 text-xs">
+                            <span class="flex items-center"><span class="inline-block w-3 h-3 rounded bg-blue-600 mr-1"></span>TheraSphere</span>
+                            <span class="flex items-center"><span class="inline-block w-3 h-3 rounded bg-teal-500 mr-1"></span>Intera 3000</span>
+                            <span class="flex items-center"><span class="inline-block w-3 h-3 rounded bg-orange-500 mr-1"></span>Obsidio</span>
+                        </div>
+                    </div>
+                    <div class="h-72">
+                        <canvas id="crossSellChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Market Share vs Benchmark (45%) -->
+                <div class="lg:col-span-5 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-primary">Market Share vs Benchmark</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Trailing 6 quarters</p>
+                        </div>
+                        <div class="bg-secondary/10 text-secondary text-xs font-semibold px-3 py-1 rounded-full">Current: 42%</div>
+                    </div>
+                    <div class="h-72">
+                        <canvas id="marketShareChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Chart.js Scripts -->
+    <script>
+        // Cross-Sell Penetration - Stacked Bar Chart
+        const crossSellCtx = document.getElementById('crossSellChart').getContext('2d');
+        new Chart(crossSellCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mayo Clinic', 'Cleveland Clinic', 'Johns Hopkins', 'Mass General'],
+                datasets: [
+                    {
+                        label: 'TheraSphere',
+                        data: [4.2, 3.8, 3.5, 3.1],
+                        backgroundColor: '#2563eb',
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Intera 3000',
+                        data: [3.1, 2.5, 2.8, 2.2],
+                        backgroundColor: '#14b8a6',
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Obsidio',
+                        data: [1.8, 1.2, 0.9, 1.5],
+                        backgroundColor: '#f97316',
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.raw + 'M';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { size: 11, family: 'Inter' } }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            font: { size: 11, family: 'Inter' },
+                            callback: function(value) { return '$' + value + 'M'; }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Revenue ($M)',
+                            font: { size: 11, family: 'Inter' }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Market Share vs Benchmark - Line Chart
+        const marketShareCtx = document.getElementById('marketShareChart').getContext('2d');
+        new Chart(marketShareCtx, {
+            type: 'line',
+            data: {
+                labels: ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25', 'Q1 FY26', 'Q2 FY26'],
+                datasets: [
+                    {
+                        label: 'BSC IO Portfolio',
+                        data: [36, 37.5, 39, 40.2, 41.1, 42],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2563eb',
+                        fill: true,
+                        tension: 0.3,
+                    },
+                    {
+                        label: 'Top Competitor',
+                        data: [34, 33.5, 33.8, 33.2, 32.8, 32.5],
+                        borderColor: '#dc2626',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#dc2626',
+                        fill: false,
+                        tension: 0.3,
+                    },
+                    {
+                        label: 'Industry Avg',
+                        data: [28, 28.2, 28.1, 28.3, 28.2, 28.4],
+                        borderColor: '#9ca3af',
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        pointRadius: 2,
+                        pointBackgroundColor: '#9ca3af',
+                        fill: false,
+                        tension: 0.3,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 16,
+                            font: { size: 11, family: 'Inter' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10, family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { color: '#f1f5f9' },
+                        min: 25,
+                        max: 45,
+                        ticks: {
+                            font: { size: 11, family: 'Inter' },
+                            callback: function(value) { return value + '%'; }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+<!-- Agentforce Panel -->
+<div id="agentforce-panel" class="hidden fixed bottom-20 z-[1000] flex flex-col bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style="left: 260px; width: 380px; height: 520px;">
+    <div class="bg-[#032D60] text-white px-4 py-3 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+            <span class="text-sm font-bold">Agentforce for Analytics</span>
+        </div>
+        <button id="agentforce-close" class="text-white/70 hover:text-white">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+    <div id="agentforce-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div class="flex justify-start mb-3">
+            <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-lg rounded-bl-none max-w-[85%] text-sm shadow-sm">
+                Hi! I'm your Agentforce analytics assistant. I can help you explore the IO Command Center data. Try one of these questions:
+            </div>
+        </div>
+        <div id="agentforce-suggestions" class="space-y-2 mb-3"></div>
+    </div>
+    <div class="border-t border-gray-200 p-3 flex gap-2 shrink-0 bg-white">
+        <input id="agentforce-input" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[#0176D3] focus:ring-1 focus:ring-[#0176D3] outline-none" placeholder="Ask Agentforce...">
+        <button id="agentforce-send" class="bg-[#0176D3] text-white px-3 py-2 rounded-lg hover:bg-[#014486] transition-colors">
+            <span class="material-symbols-outlined text-lg">send</span>
+        </button>
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderSparkline('spark1', [88.5, 89.2, 90.1, 91.0, 92.2, 93.0, 93.8, 94.2], '#22c55e');
+    renderSparkline('spark2', [58, 60, 62, 63, 64, 65, 67, 68], '#22c55e');
+    renderSparkline('spark3', [14.2, 15.0, 15.8, 16.2, 16.8, 17.4, 18.0, 18.5], '#22c55e');
+    renderSparkline('spark4', [52, 50, 48, 47, 46, 45, 43, 42], '#22c55e');
+});
+</script>
+</body>
+</html>

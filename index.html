@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IO Unified Command Center - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#001e40',
+                        'primary-container': '#003366',
+                        secondary: '#006a6a',
+                        error: '#ba1a1a',
+                        surface: '#f7f9fb',
+                        'sf-blue': '#032D60',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono-data { font-family: 'JetBrains Mono', monospace; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+        .pulse-dot {
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .sparkline-up { background: linear-gradient(to right, rgba(34,197,94,0.1), rgba(34,197,94,0.3)); }
+        .sparkline-down { background: linear-gradient(to right, rgba(239,68,68,0.1), rgba(239,68,68,0.3)); }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-surface min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 bg-primary h-14 flex items-center justify-between px-6 z-50 shadow-lg">
+        <div class="flex items-center gap-3">
+            <img src="boston-scientific-logo.png" alt="Boston Scientific" class="h-[140px] brightness-0 invert object-contain">
+        </div>
+        <div class="flex items-center gap-1">
+            <a href="index.html" class="px-4 py-2 text-white text-sm font-medium bg-white/10 rounded-md">Dashboard</a>
+            <a href="clinical-trials.html" class="px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/5 rounded-md transition">Clinical Trials</a>
+            <a href="metrics.html" class="px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/5 rounded-md transition">Metrics</a>
+            <a href="logistics.html" class="px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/5 rounded-md transition">Logistics</a>
+            <a href="patient-outcomes.html" class="px-4 py-2 text-white/70 text-sm font-medium hover:text-white hover:bg-white/5 rounded-md transition">Patient Outcomes</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="text-white/70 hover:text-white transition relative">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button class="text-white/70 hover:text-white transition">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white text-xs font-semibold">SA</div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="fixed top-14 left-0 w-[240px] h-[calc(100vh-56px)] bg-primary flex flex-col z-40">
+        <!-- Logo Area -->
+        <div class="px-5 py-5 border-b border-white/10">
+            <div class="text-white font-bold text-sm tracking-wider">Interventional Oncology</div>
+            <div class="text-white/50 text-xs">Unified Command Center</div>
+        </div>
+
+        <!-- Nav Items -->
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium">
+                <span class="material-symbols-outlined text-xl">dashboard</span>
+                Overview
+            </a>
+            <a href="clinical-trials.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 text-sm font-medium transition">
+                <span class="material-symbols-outlined text-xl">science</span>
+                Clinical Trials
+            </a>
+            <a href="metrics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 text-sm font-medium transition">
+                <span class="material-symbols-outlined text-xl">monitoring</span>
+                Metrics
+            </a>
+            <a href="logistics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 text-sm font-medium transition">
+                <span class="material-symbols-outlined text-xl">local_shipping</span>
+                Logistics
+            </a>
+            <a href="patient-outcomes.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/5 text-sm font-medium transition">
+                <span class="material-symbols-outlined text-xl">favorite</span>
+                Patient Outcomes
+            </a>
+        </nav>
+
+        <!-- Agentforce Button -->
+        <div class="px-4 pb-5">
+            <button id="agentforce-btn" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sf-blue hover:bg-sf-blue/90 rounded-xl text-white text-sm font-semibold transition shadow-lg pulse-glow">
+                <span class="w-2.5 h-2.5 bg-green-400 rounded-full pulse-dot"></span>
+                Agentforce
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ml-[240px] mt-14 p-6">
+
+        <!-- Tableau Next Concierge Search Bar -->
+        <div class="mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4 flex items-center gap-3 hover:shadow-md transition">
+                <span class="material-symbols-outlined text-secondary text-2xl">search_insights</span>
+                <input type="text" placeholder="Ask Concierge: Show me accounts with dropping TheraSphere procedure volumes this quarter" class="flex-1 text-sm text-gray-600 placeholder:text-gray-400 outline-none bg-transparent">
+                <span class="material-symbols-outlined text-gray-400 text-xl cursor-pointer hover:text-gray-600">mic</span>
+            </div>
+        </div>
+
+        <!-- Pulse-Style Metrics Row -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <!-- Metric 1: On-Time Delivery -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">On-Time Delivery</span>
+                    <span class="material-symbols-outlined text-green-500 text-lg">trending_up</span>
+                </div>
+                <div class="font-mono-data text-3xl font-bold text-primary mb-2">98.4%</div>
+                <canvas id="spark1" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-gray-500 leading-relaxed">Delivery performance improved 0.2pp this week, driven by EMEA carrier optimization.</p>
+            </div>
+
+            <!-- Metric 2: Dose Utilization -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Dose Utilization</span>
+                    <span class="material-symbols-outlined text-red-500 text-lg">trending_down</span>
+                </div>
+                <div class="font-mono-data text-3xl font-bold text-primary mb-2">94.1%</div>
+                <canvas id="spark2" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-gray-500 leading-relaxed">Utilization dipped 1.1pp due to 3 scheduling cancellations in NA East.</p>
+            </div>
+
+            <!-- Metric 3: Quota Attainment -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quota Attainment</span>
+                    <span class="material-symbols-outlined text-green-500 text-lg">trending_up</span>
+                </div>
+                <div class="font-mono-data text-3xl font-bold text-primary mb-2">104.2%</div>
+                <canvas id="spark3" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-gray-500 leading-relaxed">Global sales exceed target by 4.2pp; DACH region leading with 126% attainment.</p>
+            </div>
+
+            <!-- Metric 4: Enrollment vs Plan -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Enrollment vs Plan</span>
+                    <span class="material-symbols-outlined text-amber-500 text-lg">trending_down</span>
+                </div>
+                <div class="font-mono-data text-3xl font-bold text-primary mb-2">81%</div>
+                <canvas id="spark4" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-gray-500 leading-relaxed">ROWAN-III enrollment is 19pp behind target; LEGACY-IV is the primary drag.</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-5 gap-6">
+
+            <!-- Left Column: TheraSphere Logistics & Decay Alerts (3/5 width) -->
+            <div class="col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-sm font-bold text-primary uppercase tracking-wider">TheraSphere Logistics & Decay Alerts</h2>
+                        <span class="w-2 h-2 bg-red-500 rounded-full pulse-dot"></span>
+                        <span class="text-xs text-red-600 font-medium">Live Monitoring</span>
+                    </div>
+                    <span class="material-symbols-outlined text-gray-400 text-xl cursor-pointer hover:text-gray-600">more_vert</span>
+                </div>
+
+                <!-- Chart: Doses in Transit -->
+                <div class="mb-6">
+                    <canvas id="logisticsChart" height="180"></canvas>
+                </div>
+
+                <!-- Alert Items -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-red-600">flight</span>
+                            <div>
+                                <span class="font-mono-data text-sm font-semibold text-primary">Y90-A-4492</span>
+                                <span class="text-xs text-gray-500 ml-2">JFK → LHR</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono-data text-sm font-bold text-red-600">14h 22m REMAINING</span>
+                            <span class="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full font-medium">Customs Hold</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-amber-600">local_shipping</span>
+                            <div>
+                                <span class="font-mono-data text-sm font-semibold text-primary">Y90-B-1102</span>
+                                <span class="text-xs text-gray-500 ml-2">FRA → Berlin</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono-data text-sm font-bold text-amber-600">24h 30m REMAINING</span>
+                            <span class="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">In Transit</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-600">local_shipping</span>
+                            <div>
+                                <span class="font-mono-data text-sm font-semibold text-primary">Y90-C-9931</span>
+                                <span class="text-xs text-gray-500 ml-2">CDG → Mass Gen</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono-data text-sm font-bold text-green-600">48h 00m REMAINING</span>
+                            <span class="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-medium">On Schedule</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-amber-600">flight</span>
+                            <div>
+                                <span class="font-mono-data text-sm font-semibold text-primary">Y90-D-7718</span>
+                                <span class="text-xs text-gray-500 ml-2">ORD → Toronto</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono-data text-sm font-bold text-amber-600">22h 15m REMAINING</span>
+                            <span class="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">Weather Delay</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-span-2 space-y-6">
+
+                <!-- Clinical Trial Command Center -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold text-primary uppercase tracking-wider">Clinical Trial Command Center</h2>
+                        <span class="material-symbols-outlined text-gray-400 text-xl cursor-pointer hover:text-gray-600">more_vert</span>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex gap-1 mb-4 border-b border-gray-200">
+                        <button class="px-3 py-2 text-xs font-semibold text-secondary border-b-2 border-secondary">ROWAN</button>
+                        <button class="px-3 py-2 text-xs font-medium text-gray-400 hover:text-gray-600 transition">PROACTIF</button>
+                        <button class="px-3 py-2 text-xs font-medium text-gray-400 hover:text-gray-600 transition">LEGACY</button>
+                        <button class="px-3 py-2 text-xs font-medium text-gray-400 hover:text-gray-600 transition">EPOCH</button>
+                    </div>
+
+                    <!-- Enrollment Chart -->
+                    <div class="mb-4">
+                        <canvas id="enrollmentChart" height="140"></canvas>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-surface rounded-lg p-3">
+                            <div class="text-xs text-gray-500 mb-1">Site Activation</div>
+                            <div class="font-mono-data text-lg font-bold text-primary">85<span class="text-sm text-gray-400">/100</span></div>
+                        </div>
+                        <div class="bg-surface rounded-lg p-3">
+                            <div class="text-xs text-gray-500 mb-1">Enrollment vs Plan</div>
+                            <div class="font-mono-data text-lg font-bold text-primary">92%</div>
+                        </div>
+                        <div class="bg-surface rounded-lg p-3">
+                            <div class="text-xs text-gray-500 mb-1">Time to 1st Pt</div>
+                            <div class="font-mono-data text-lg font-bold text-primary">42 <span class="text-sm text-gray-400">Days</span></div>
+                        </div>
+                        <div class="bg-surface rounded-lg p-3">
+                            <div class="text-xs text-gray-500 mb-1">Protocol Dev</div>
+                            <div class="font-mono-data text-lg font-bold text-green-600">Low <span class="text-sm text-gray-400">(1.2%)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-World Evidence & Outcomes -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold text-primary uppercase tracking-wider">Real-World Evidence & Outcomes</h2>
+                        <span class="material-symbols-outlined text-gray-400 text-xl cursor-pointer hover:text-gray-600">more_vert</span>
+                    </div>
+
+                    <div class="text-xs text-gray-500 mb-3">OS by Treatment Arm (&ge;400 Gy filter)</div>
+
+                    <!-- Kaplan-Meier Chart -->
+                    <div class="mb-4">
+                        <canvas id="kmChart" height="150"></canvas>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-surface rounded-lg p-3 text-center">
+                            <div class="text-xs text-gray-500 mb-1">ORR</div>
+                            <div class="font-mono-data text-lg font-bold text-secondary">64.2%</div>
+                        </div>
+                        <div class="bg-surface rounded-lg p-3 text-center">
+                            <div class="text-xs text-gray-500 mb-1">Median TTP</div>
+                            <div class="font-mono-data text-lg font-bold text-secondary">14.8 <span class="text-xs text-gray-400">mo</span></div>
+                        </div>
+                        <div class="bg-surface rounded-lg p-3 text-center">
+                            <div class="text-xs text-gray-500 mb-1">Grade 3+ AE</div>
+                            <div class="font-mono-data text-lg font-bold text-amber-600">12.5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <script>
+        // Chart 1: TheraSphere Logistics - Doses in Transit
+        const logisticsCtx = document.getElementById('logisticsChart').getContext('2d');
+        new Chart(logisticsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Doses In Transit',
+                        data: [42, 38, 45, 51, 47, 39, 44],
+                        borderColor: '#006a6a',
+                        backgroundColor: 'rgba(0, 106, 106, 0.08)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#006a6a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                    },
+                    {
+                        label: 'At-Risk (Decay Window)',
+                        data: [5, 3, 7, 9, 6, 4, 6],
+                        borderColor: '#ba1a1a',
+                        backgroundColor: 'rgba(186, 26, 26, 0.06)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ba1a1a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        borderDash: [5, 3],
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            font: { family: 'Inter', size: 11 },
+                            usePointStyle: true,
+                            pointStyleWidth: 8,
+                            boxHeight: 6,
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 11 }, color: '#94a3b8' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { family: 'JetBrains Mono', size: 11 }, color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Clinical Trial Enrollment (Target vs Actual)
+        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+        new Chart(enrollmentCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Target',
+                        data: [20, 45, 75, 110, 150, 195, 245, 300, 360, 425, 490, 560],
+                        borderColor: '#94a3b8',
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Actual',
+                        data: [18, 40, 68, 98, 135, 178, 225, 275, 332, null, null, null],
+                        borderColor: '#006a6a',
+                        backgroundColor: 'rgba(0, 106, 106, 0.08)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#006a6a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1.5,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            font: { family: 'Inter', size: 10 },
+                            usePointStyle: true,
+                            pointStyleWidth: 8,
+                            boxHeight: 6,
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 10 }, color: '#94a3b8' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Kaplan-Meier Survival Curves (Step Chart)
+        const kmCtx = document.getElementById('kmChart').getContext('2d');
+        new Chart(kmCtx, {
+            type: 'line',
+            data: {
+                labels: ['0', '3', '6', '9', '12', '15', '18', '21', '24', '27', '30', '33', '36'],
+                datasets: [
+                    {
+                        label: 'Study Drug + SoC',
+                        data: [1.0, 0.96, 0.91, 0.86, 0.80, 0.74, 0.68, 0.63, 0.58, 0.54, 0.51, 0.48, 0.45],
+                        borderColor: '#006a6a',
+                        backgroundColor: 'rgba(0, 106, 106, 0.05)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        stepped: 'before',
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'SoC Alone',
+                        data: [1.0, 0.93, 0.85, 0.76, 0.67, 0.58, 0.50, 0.43, 0.37, 0.32, 0.28, 0.25, 0.22],
+                        borderColor: '#94a3b8',
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        fill: false,
+                        stepped: 'before',
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            font: { family: 'Inter', size: 10 },
+                            usePointStyle: true,
+                            pointStyleWidth: 8,
+                            boxHeight: 6,
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Months', font: { family: 'Inter', size: 10 }, color: '#94a3b8' },
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 10 }, color: '#94a3b8' }
+                    },
+                    y: {
+                        min: 0,
+                        max: 1,
+                        title: { display: true, text: 'Survival Probability', font: { family: 'Inter', size: 10 }, color: '#94a3b8' },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        ticks: {
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            color: '#94a3b8',
+                            callback: function(value) { return (value * 100) + '%'; }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- Agentforce Panel -->
+    <div id="agentforce-panel" class="hidden fixed bottom-20 z-[1000] flex flex-col bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style="left: 260px; width: 380px; height: 520px;">
+        <div class="bg-[#032D60] text-white px-4 py-3 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                <span class="text-sm font-bold">Agentforce for Analytics</span>
+            </div>
+            <button id="agentforce-close" class="text-white/70 hover:text-white">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>
+        <div id="agentforce-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+            <div class="flex justify-start mb-3">
+                <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-lg rounded-bl-none max-w-[85%] text-sm shadow-sm">
+                    Hi! I'm your Agentforce analytics assistant. I can help you explore the IO Command Center data. Try one of these questions:
+                </div>
+            </div>
+            <div id="agentforce-suggestions" class="space-y-2 mb-3"></div>
+        </div>
+        <div class="border-t border-gray-200 p-3 flex gap-2 shrink-0 bg-white">
+            <input id="agentforce-input" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[#0176D3] focus:ring-1 focus:ring-[#0176D3] outline-none" placeholder="Ask Agentforce...">
+            <button id="agentforce-send" class="bg-[#0176D3] text-white px-3 py-2 rounded-lg hover:bg-[#014486] transition-colors">
+                <span class="material-symbols-outlined text-lg">send</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sparkline data
+        renderSparkline('spark1', [96.2, 96.8, 97.1, 97.5, 97.8, 98.0, 98.2, 98.4], '#22c55e');
+        renderSparkline('spark2', [96.5, 96.2, 95.8, 95.5, 95.2, 94.8, 94.5, 94.1], '#ef4444');
+        renderSparkline('spark3', [98.2, 99.5, 100.1, 101.4, 102.0, 102.8, 103.5, 104.2], '#22c55e');
+        renderSparkline('spark4', [88, 87, 86, 85, 84, 83, 82, 81], '#f59e0b');
+    });
+    </script>
+</body>
+</html>

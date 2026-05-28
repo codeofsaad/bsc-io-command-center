@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics - IO Unified Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#001e40',
+                        'primary-container': '#003366',
+                        secondary: '#006a6a',
+                        error: '#ba1a1a',
+                        'sf-blue': '#032D60',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.3); }
+        }
+        .glow-node {
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(34, 197, 94, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+        }
+        .glow-amber {
+            animation: glowAmber 3s ease-in-out infinite alternate;
+        }
+        @keyframes glowAmber {
+            0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.8); }
+        }
+        .glow-red {
+            animation: glowRed 2s ease-in-out infinite alternate;
+        }
+        @keyframes glowRed {
+            0% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .metric-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-primary border-b border-white/10">
+        <div class="flex items-center justify-between h-14 px-4">
+            <div class="flex items-center gap-3">
+                <img src="boston-scientific-logo.png" alt="Boston Scientific" class="h-[140px] brightness-0 invert object-contain">
+            </div>
+            <div class="flex items-center gap-1">
+                <a href="index.html" class="px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Dashboard</a>
+                <a href="clinical-trials.html" class="px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Clinical Trials</a>
+                <a href="metrics.html" class="px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Metrics</a>
+                <a href="logistics.html" class="px-4 py-2 text-sm text-white bg-white/15 rounded-lg font-medium">Logistics</a>
+                <a href="patient-outcomes.html" class="px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Patient Outcomes</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                </button>
+                <button class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-xl">settings</span>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white text-xs font-semibold">SA</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="fixed top-14 left-0 bottom-0 w-64 bg-primary border-r border-white/10 z-40 flex flex-col">
+        <div class="px-5 py-5 border-b border-white/10">
+            <div class="text-white font-bold text-sm tracking-wider">Interventional Oncology</div>
+            <div class="text-white/50 text-xs">Unified Command Center</div>
+        </div>
+        <nav class="flex-1 px-3 space-y-1">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-xl">dashboard</span>
+                <span class="text-sm font-medium">Overview</span>
+            </a>
+            <a href="clinical-trials.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-xl">science</span>
+                <span class="text-sm font-medium">Clinical Trials</span>
+            </a>
+            <a href="metrics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-xl">analytics</span>
+                <span class="text-sm font-medium">Metrics</span>
+            </a>
+            <a href="logistics.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/15 transition-colors">
+                <span class="material-symbols-outlined text-xl">local_shipping</span>
+                <span class="text-sm font-medium">Logistics</span>
+            </a>
+            <a href="patient-outcomes.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-xl">monitor_heart</span>
+                <span class="text-sm font-medium">Patient Outcomes</span>
+            </a>
+        </nav>
+        <div class="p-4">
+            <button id="agentforce-btn" class="w-full flex items-center gap-3 px-4 py-3 bg-sf-blue rounded-xl hover:brightness-110 transition-all">
+                <div class="relative">
+                    <span class="material-symbols-outlined text-xl text-white">smart_toy</span>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full pulse-dot"></span>
+                </div>
+                <span class="text-white text-sm font-semibold">Agentforce</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 mt-14 p-6">
+        <!-- Concierge Search Bar -->
+        <div class="mb-6">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40">search</span>
+                <input type="text" placeholder="Ask Concierge: Which hubs have TheraSphere stock below safety threshold?" class="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-400/50 focus:bg-white/8 transition-all text-sm">
+            </div>
+        </div>
+
+        <!-- Pulse-Style Metrics Row -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <!-- Inventory Value -->
+            <div class="metric-card rounded-xl p-5 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white/60 text-xs font-medium uppercase tracking-wider">Inventory Value</span>
+                    <span class="material-symbols-outlined text-lg text-emerald-400">inventory_2</span>
+                </div>
+                <div class="text-2xl font-bold text-white mb-2">$42.8M</div>
+                <canvas id="spark1" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-white/50 leading-relaxed">Total portfolio value up 2.4% from last quarter; TheraSphere accounts for 38% of total value.</p>
+            </div>
+            <!-- Turnover Ratio -->
+            <div class="metric-card rounded-xl p-5 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white/60 text-xs font-medium uppercase tracking-wider">Turnover Ratio</span>
+                    <span class="material-symbols-outlined text-lg text-blue-400">sync</span>
+                </div>
+                <div class="text-2xl font-bold text-white mb-2">8.4x</div>
+                <canvas id="spark2" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-white/50 leading-relaxed">Inventory velocity is within optimal range (7-10x); APAC hub showing slowest turnover at 6.2x.</p>
+            </div>
+            <!-- Out-of-Stock -->
+            <div class="metric-card rounded-xl p-5 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white/60 text-xs font-medium uppercase tracking-wider">Out-of-Stock</span>
+                    <span class="material-symbols-outlined text-lg text-red-400">warning</span>
+                </div>
+                <div class="text-2xl font-bold text-white mb-2">12 Critical</div>
+                <canvas id="spark3" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-white/50 leading-relaxed">Critical incidents up from 8 last month; Obsidio at NA East Hub is the most urgent (1 day remaining).</p>
+            </div>
+            <!-- Lead Time -->
+            <div class="metric-card rounded-xl p-5 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-white/60 text-xs font-medium uppercase tracking-wider">Lead Time</span>
+                    <span class="material-symbols-outlined text-lg text-amber-400">schedule</span>
+                </div>
+                <div class="text-2xl font-bold text-white mb-2">18.4 hrs</div>
+                <canvas id="spark4" width="200" height="32" class="w-full h-8 mb-2"></canvas>
+                <p class="text-xs text-white/50 leading-relaxed">Average shipping time increased 1.2hrs due to weather delays affecting EU Central route.</p>
+            </div>
+        </div>
+
+        <!-- Global Dose Tracker — 64h Decay Window Timeline -->
+        <div class="mb-6 rounded-xl overflow-hidden border border-white/10 bg-[#0d1b2a]">
+            <div class="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-cyan-400">timer</span>
+                    <h2 class="text-white font-semibold">Y-90 Dose Decay Window Tracker</h2>
+                    <span class="text-xs text-white/40 ml-2">64-hour half-life calibration window</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-white/70">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-400"></span> On Schedule</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> &lt;24h remaining</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> &lt;12h / Critical</span>
+                </div>
+            </div>
+
+            <!-- Timeline Header -->
+            <div class="px-5 pt-3 pb-1 flex items-center">
+                <div class="w-[200px] shrink-0"></div>
+                <div class="flex-1 flex justify-between text-[10px] text-white/40 font-mono">
+                    <span>0h</span><span>8h</span><span>16h</span><span>24h</span><span>32h</span><span>40h</span><span>48h</span><span>56h</span><span>64h</span>
+                </div>
+            </div>
+
+            <!-- Dose Rows -->
+            <div class="px-5 pb-5 space-y-3">
+                <!-- Dose 1 — CRITICAL -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-A-4492</div>
+                            <div class="text-[10px] text-white/40">JFK → Royal London Hosp</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 to-red-400 rounded-full" style="width: 78%"></div>
+                        <div class="absolute inset-y-0 left-[78%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">14h 22m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">CUSTOMS HOLD</span>
+                    </div>
+                </div>
+
+                <!-- Dose 2 — WARNING -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-B-1102</div>
+                            <div class="text-[10px] text-white/40">FRA → Charite Berlin</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-600 to-amber-400 rounded-full" style="width: 62%"></div>
+                        <div class="absolute inset-y-0 left-[62%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">24h 30m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">IN TRANSIT</span>
+                    </div>
+                </div>
+
+                <!-- Dose 3 — ON SCHEDULE -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-C-9931</div>
+                            <div class="text-[10px] text-white/40">CDG → Mass General Hosp</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-green-700 to-green-400 rounded-full" style="width: 25%"></div>
+                        <div class="absolute inset-y-0 left-[25%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">48h 00m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">ON SCHEDULE</span>
+                    </div>
+                </div>
+
+                <!-- Dose 4 — ON SCHEDULE -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-D-7718</div>
+                            <div class="text-[10px] text-white/40">SIN → Tokyo Medical Ctr</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-green-700 to-green-400 rounded-full" style="width: 18%"></div>
+                        <div class="absolute inset-y-0 left-[18%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">52h 15m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">ON SCHEDULE</span>
+                    </div>
+                </div>
+
+                <!-- Dose 5 — ON SCHEDULE -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-E-3305</div>
+                            <div class="text-[10px] text-white/40">ORD → Mayo Clinic</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-green-700 to-green-400 rounded-full" style="width: 8%"></div>
+                        <div class="absolute inset-y-0 left-[8%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">59h 40m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">JUST DISPATCHED</span>
+                    </div>
+                </div>
+
+                <!-- Dose 6 — CRITICAL -->
+                <div class="flex items-center gap-3">
+                    <div class="w-[200px] shrink-0 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <div>
+                            <div class="font-mono text-xs text-white font-semibold">Y90-F-2201</div>
+                            <div class="text-[10px] text-white/40">BOS → Cleveland Clinic</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-red-700 to-red-500 rounded-full" style="width: 85%"></div>
+                        <div class="absolute inset-y-0 left-[85%] w-px bg-white/60"></div>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-white font-bold">9h 38m left</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-white/80 font-medium">TEMP EXCURSION</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Section -->
+        <div class="grid grid-cols-12 gap-6 mb-6">
+            <!-- Carrier Reliability Index (55%) -->
+            <div class="col-span-7 rounded-xl border border-white/10 overflow-hidden">
+                <div class="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-400">verified</span>
+                    <h2 class="text-white font-semibold">Carrier Reliability Index</h2>
+                </div>
+                <div class="p-5">
+                    <div class="h-56">
+                        <canvas id="carrierChart"></canvas>
+                    </div>
+                    <div class="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg flex items-start gap-2">
+                        <span class="material-symbols-outlined text-blue-400 text-lg mt-0.5">recommend</span>
+                        <p class="text-xs text-blue-200">Recommended: <span class="font-semibold">MedLogistics Pro</span> - Best performance for temperature-sensitive payloads</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Critical Low Stock Alerts (45%) -->
+            <div class="col-span-5 rounded-xl border border-white/10 overflow-hidden">
+                <div class="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-red-400">inventory</span>
+                    <h2 class="text-white font-semibold">Critical Low Stock Alerts</h2>
+                </div>
+                <div class="p-4">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="text-white/50 uppercase tracking-wider border-b border-white/10">
+                                <th class="pb-2 text-left font-medium">Product</th>
+                                <th class="pb-2 text-left font-medium">Hub</th>
+                                <th class="pb-2 text-center font-medium">Stock</th>
+                                <th class="pb-2 text-center font-medium">Days Left</th>
+                                <th class="pb-2 text-right font-medium">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 font-medium text-white">TheraSphere</td>
+                                <td class="py-3 text-white/60">EU Central</td>
+                                <td class="py-3 text-center text-white/70">14 units</td>
+                                <td class="py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">2 DAYS</span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <button class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-semibold transition-colors">REORDER</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 font-medium text-white">Obsidio</td>
+                                <td class="py-3 text-white/60">NA East</td>
+                                <td class="py-3 text-center text-white/70">08 units</td>
+                                <td class="py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-semibold">1 DAY</span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <button class="px-2.5 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 font-semibold transition-colors">EXPEDITE</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 font-medium text-white">Farapulse</td>
+                                <td class="py-3 text-white/60">APAC</td>
+                                <td class="py-3 text-center text-white/70">32 units</td>
+                                <td class="py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">4 DAYS</span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <button class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-semibold transition-colors">REORDER</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 font-medium text-white">Watchman FLX</td>
+                                <td class="py-3 text-white/60">NA East</td>
+                                <td class="py-3 text-center text-white/70">19 units</td>
+                                <td class="py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">3 DAYS</span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <button class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-semibold transition-colors">REORDER</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reorder Forecast -->
+        <div class="rounded-xl border border-white/10 overflow-hidden">
+            <div class="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-purple-400">trending_down</span>
+                    <h2 class="text-white font-semibold">Reorder Forecast</h2>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-white/50">
+                    <span class="material-symbols-outlined text-sm text-amber-400">info</span>
+                    <span>Reorder trigger for TheraSphere expected in 48 hours</span>
+                </div>
+            </div>
+            <div class="p-5">
+                <div class="h-64">
+                    <canvas id="reorderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+        // Carrier Reliability Index
+        const carrierCtx = document.getElementById('carrierChart').getContext('2d');
+        new Chart(carrierCtx, {
+            type: 'bar',
+            data: {
+                labels: ['MedLogistics Pro', 'FedEx Custom Critical', 'UPS Healthcare', 'Global Courier'],
+                datasets: [{
+                    data: [98.2, 95.4, 89.1, 84.2],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(239, 68, 68, 0.5)',
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(239, 68, 68, 0.8)',
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 28,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.raw + '% reliability';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        min: 75,
+                        max: 100,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.5)',
+                            font: { size: 11 },
+                            callback: function(value) { return value + '%'; }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.7)',
+                            font: { size: 11, family: 'Inter' }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Reorder Forecast
+        const reorderCtx = document.getElementById('reorderChart').getContext('2d');
+        new Chart(reorderCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Today', 'Week 10', 'Week 11', 'Week 12'],
+                datasets: [{
+                    label: 'TheraSphere Inventory',
+                    data: [120, 108, 95, 88, 76, 62, 54, 42, 32, 24, 18, 12],
+                    borderColor: 'rgba(139, 92, 246, 1)',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: 'Obsidio Inventory',
+                    data: [80, 74, 68, 60, 52, 44, 38, 30, 22, 16, 10, 6],
+                    borderColor: 'rgba(236, 72, 153, 1)',
+                    backgroundColor: 'rgba(236, 72, 153, 0.05)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255,255,255,0.7)',
+                            font: { size: 11 },
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            safetyThreshold: {
+                                type: 'line',
+                                yMin: 20,
+                                yMax: 20,
+                                borderColor: 'rgba(239, 68, 68, 0.8)',
+                                borderWidth: 2,
+                                borderDash: [8, 4],
+                                label: {
+                                    display: true,
+                                    content: 'Safety Threshold',
+                                    position: 'end',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                    color: '#fff',
+                                    font: { size: 10, weight: 'bold' },
+                                    padding: 4,
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.5)',
+                            font: { size: 11 }
+                        }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.5)',
+                            font: { size: 11 },
+                            callback: function(value) { return value + ' units'; }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+<!-- Agentforce Panel -->
+<div id="agentforce-panel" class="hidden fixed bottom-20 z-[1000] flex flex-col bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden" style="left: 260px; width: 380px; height: 520px;">
+    <div class="bg-[#032D60] text-white px-4 py-3 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+            <span class="text-sm font-bold">Agentforce for Analytics</span>
+        </div>
+        <button id="agentforce-close" class="text-white/70 hover:text-white">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+    <div id="agentforce-chat" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div class="flex justify-start mb-3">
+            <div class="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-lg rounded-bl-none max-w-[85%] text-sm shadow-sm">
+                Hi! I'm your Agentforce analytics assistant. I can help you explore the IO Command Center data. Try one of these questions:
+            </div>
+        </div>
+        <div id="agentforce-suggestions" class="space-y-2 mb-3"></div>
+    </div>
+    <div class="border-t border-gray-200 p-3 flex gap-2 shrink-0 bg-white">
+        <input id="agentforce-input" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[#0176D3] focus:ring-1 focus:ring-[#0176D3] outline-none" placeholder="Ask Agentforce...">
+        <button id="agentforce-send" class="bg-[#0176D3] text-white px-3 py-2 rounded-lg hover:bg-[#014486] transition-colors">
+            <span class="material-symbols-outlined text-lg">send</span>
+        </button>
+    </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    renderSparkline('spark1', [38.2, 39.1, 40.0, 40.8, 41.2, 41.8, 42.4, 42.8], '#22c55e');
+    renderSparkline('spark2', [7.8, 7.9, 8.0, 8.1, 8.2, 8.2, 8.3, 8.4], '#22c55e');
+    renderSparkline('spark3', [6, 7, 8, 9, 10, 10, 11, 12], '#ef4444');
+    renderSparkline('spark4', [16.8, 17.0, 17.2, 17.5, 17.8, 18.0, 18.2, 18.4], '#f59e0b');
+});
+</script>
+</body>
+</html>
